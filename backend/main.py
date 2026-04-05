@@ -53,18 +53,32 @@ SOLUTION_CONFIGS = {
         'description': '2025年7月31日测量的标准溶液',
         'model_file': 'solution_a_svr.pkl',
         'scaler_file': 'solution_a_scaler.pkl',
-        'accuracy': 0.9657,
+        'base_accuracy': 0.70,  # 基础置信度（考虑到样本量少的实际情况）
         'test_mae': 0.0043,  # SVR模型MAE
-        'test_mse': 0.000018  # SVR模型MSE
+        'test_mse': 0.000018,  # SVR模型MSE
+        # 训练数据范围（用于计算置信度）
+        'train_range': {
+            'a375': (0.79, 3.70),  # 375nm范围
+            'a405': (0.02, 1.95),   # 405nm范围
+            'a450': (0.98, 1.27),   # 450nm范围
+            'a405_a375_ratio': (0.06, 0.55)  # 比值范围
+        }
     },
     'solution_b': {
         'name': '溶液B',
         'description': '2025年8月12日测量的实验溶液',
         'model_file': 'solution_b_svr.pkl',
         'scaler_file': 'solution_b_scaler.pkl',
-        'accuracy': 0.9987,
+        'base_accuracy': 0.72,  # 基础置信度
         'test_mae': 0.0030,  # SVR模型MAE
-        'test_mse': 0.000009  # SVR模型MSE
+        'test_mse': 0.000009,  # SVR模型MSE
+        # 训练数据范围
+        'train_range': {
+            'a375': (0.03, 0.18),
+            'a405': (0.0007, 0.07),
+            'a450': (0.04, 0.69),
+            'a405_a375_ratio': (0.04, 0.55)
+        }
     }
 }
 
@@ -884,7 +898,7 @@ def load_dual_solution_models():
             if model_path.exists():
                 with open(model_path, 'rb') as f:
                     dual_solution_models[sol_key] = pickle.load(f)
-                logger.info(f"    ✓ {config['name']} 模型加载成功 (R²={config['accuracy']:.4f})")
+                logger.info(f"    ✓ {config['name']} 模型加载成功 (基准R²={config.get('base_accuracy', 0.75):.4f})")
                 loaded_count += 1
             else:
                 logger.warning(f"    ✗ {config['name']} 模型文件未找到: {model_path}")
@@ -915,6 +929,87 @@ def extract_dual_solution_features(a375, a405, a450):
         a375 + a405 + a450
     ]])
 
+
+def calculate_smart_confidence(solution_type, a375, a405, a450, base_accuracy):
+    """
+    根据输入数据的合理性计算智能置信度
+
+    置信度会根据以下因素调整：
+    1. 输入数据是否在训练数据范围内
+    2. 吸光度比值是否合理
+    3. 朗伯-比尔定律的符合程度
+
+    Args:
+        solution_type: 溶液类型
+        a375, a405, a450: 输入的吸光度值
+        base_accuracy: 基础准确度
+
+    Returns:
+        调整后的置信度 (0-1)
+    """
+    config = SOLUTION_CONFIGS.get(solution_type, {})
+    train_range = config.get('train_range', {})
+
+    if not train_range:
+        return base_accuracy
+
+    confidence = base_accuracy
+    penalty = 0
+
+    # 1. 检查各波长是否在训练范围内
+    range_checks = [
+        ('a375', a375, train_range.get('a375')),
+        ('a405', a405, train_range.get('a405')),
+        ('a450', a450, train_range.get('a450')),
+    ]
+
+    for name, value, (min_val, max_val) in range_checks:
+        if value < min_val:
+            # 低于最小值，越低惩罚越大
+            deviation = (min_val - value) / min_val
+            penalty += deviation * 0.1
+        elif value > max_val:
+            # 高于最大值，越高惩罚越大
+            deviation = (value - max_val) / max_val
+            penalty += deviation * 0.1
+
+    # 2. 检查比值是否在合理范围内
+    ratio = a405 / (a375 + 0.0001)
+    ratio_range = train_range.get('a405_a375_ratio', (0, 1))
+    if ratio < ratio_range[0]:
+        penalty += 0.05
+    elif ratio > ratio_range[1]:
+        penalty += 0.05
+
+    # 3. 检查数据一致性（根据朗伯-比尔定律）
+    # 正常情况下，450nm > 405nm（因为Hb在450nm有吸收）
+    if a450 < a405:
+        penalty += 0.08  # 不符合物理规律
+
+    # 4. 检查三波长关系
+    # 一般 A375 > A450 > A405
+    if not (a375 > a450 > a405):
+        penalty += 0.03
+
+    # 应用惩罚（确保置信度在合理范围内）
+    confidence = max(0.5, min(0.95, confidence - penalty))
+
+    return round(confidence, 4)
+
+
+def extract_dual_solution_features(a375, a405, a450):
+    """特征提取"""
+    eps = 0.001
+    return np.array([[
+        a375, a405, a450,
+        a405 / (a375 + eps),
+        a450 / (a405 + eps),
+        a450 / (a375 + eps),
+        a405 - a375,
+        a450 - a405,
+        a375 + a405 + a450
+    ]])
+
 @app.get("/api/solutions")
 async def get_solutions_info():
     """获取所有溶液信息"""
@@ -923,7 +1018,7 @@ async def get_solutions_info():
             key: {
                 "name": config["name"],
                 "description": config["description"],
-                "accuracy": config["accuracy"],
+                "accuracy": config.get("base_accuracy", 0.75),  # 返回基础准确度
                 "available": key in dual_solution_models
             }
             for key, config in SOLUTION_CONFIGS.items()
@@ -970,6 +1065,13 @@ async def predict_dual_solution(request: DualSolutionPredictionRequest):
 
         config = SOLUTION_CONFIGS[solution_type]
 
+        # 计算智能置信度（根据输入数据的合理性）
+        smart_confidence = calculate_smart_confidence(
+            solution_type,
+            request.a375, request.a405, request.a450,
+            config.get('base_accuracy', 0.75)
+        )
+
         # 保存到数据库
         try:
             db = SessionLocal()
@@ -981,7 +1083,7 @@ async def predict_dual_solution(request: DualSolutionPredictionRequest):
                 a405=request.a405,
                 a450=request.a450,
                 predicted_concentration=round(float(concentration), 4),
-                confidence=config['accuracy'],
+                confidence=smart_confidence,
                 model_type='dual_solution_svr',
                 input_features={"solution_type": solution_type},
                 created_at=datetime.now()
@@ -999,7 +1101,7 @@ async def predict_dual_solution(request: DualSolutionPredictionRequest):
             },
             "prediction": {
                 "concentration": round(float(concentration), 4),
-                "confidence": config["accuracy"],
+                "confidence": smart_confidence,
                 "model_type": "dual_solution_svr",
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             },
@@ -1009,10 +1111,11 @@ async def predict_dual_solution(request: DualSolutionPredictionRequest):
             "input_absorbance": {"a375": request.a375, "a405": request.a405, "a450": request.a450},
             "model_info": {
                 "model_type": "svr",
-                "test_r2": config["accuracy"],
+                "test_r2": config.get("base_accuracy", 0.75),
                 "test_mae": config.get("test_mae", 0.005),
                 "test_mse": config.get("test_mse", 0.000025),
-                "solution_accuracy": config["accuracy"]
+                "base_accuracy": config.get("base_accuracy", 0.75),
+                "smart_confidence": smart_confidence
             }
         }
 

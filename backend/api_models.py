@@ -4,7 +4,7 @@
 """
 
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Literal
 from datetime import datetime
 
 
@@ -128,6 +128,10 @@ class HealthResponse(BaseModel):
 class SimulatorRequest(BaseModel):
     """模拟器请求"""
     concentration: float = Field(..., description="样本浓度 (g/L)", ge=0, le=6)
+    solution_type: Literal['solution_a', 'solution_b'] = Field(
+        'solution_a',
+        description="溶液类型"
+    )
     noise_level: float = Field(0.01, description="噪声水平", ge=0, le=0.1)
 
 
@@ -141,6 +145,10 @@ class SimulatorResponse(BaseModel):
 class BatchSimulatorRequest(BaseModel):
     """批量模拟请求"""
     concentrations: List[float]
+    solution_type: Literal['solution_a', 'solution_b'] = Field(
+        'solution_a',
+        description="溶液类型"
+    )
     noise_level: float = Field(0.01, description="噪声水平", ge=0, le=0.1)
 
 

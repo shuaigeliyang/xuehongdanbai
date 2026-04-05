@@ -11,39 +11,58 @@ from datetime import datetime
 
 
 # 双溶液吸光度参数配置
+# 校准参数基于真实实验数据拟合
 SOLUTION_PARAMS = {
     'solution_a': {
         'name': '溶液A',
         'description': '2025年7月31日测量的标准溶液（高吸光度）',
-        # 基于实际测量数据的统计参数
+        # 基于真实实验数据统计
         'base_absorbance': {
-            375: {'mean': 1.9702, 'std': 0.1},
-            405: {'mean': 0.6393, 'std': 0.05},
-            450: {'mean': 1.0960, 'std': 0.08}
+            375: {'mean': 1.9269, 'std': 0.1},
+            405: {'mean': 0.6349, 'std': 0.05},
+            450: {'mean': 1.0958, 'std': 0.08}
         },
-        # 浓度-吸光度关系参数（线性回归系数）
+        # 浓度-吸光度关系（基于朗伯-比尔定律和实际数据拟合）
+        # 真实数据显示：FHb浓度↑时，A375和A405↓（负相关），A450基本不变
+        # 校准公式: A(C) = slope * C + intercept
+        # 参数通过边界条件计算，确保在浓度范围内A始终为正且在真实数据范围内
         'calibration': {
-            375: {'slope': 6.5, 'intercept': 0.05},
-            405: {'slope': 2.1, 'intercept': 0.02},
-            450: {'slope': 3.6, 'intercept': 0.04}
+            # 溶液A真实数据范围: A375=(0.79,3.70), A405=(0.02,1.95), A450=(0.98,1.27)
+            # 高浓度(C=0.3) → 低吸光度; 低浓度(C=0) → 高吸光度
+            375: {'slope': -9.7, 'intercept': 3.70},   # A(0.3)=0.79, A(0)=3.70
+            405: {'slope': -6.43, 'intercept': 1.95},  # A(0.3)=0.02, A(0)=1.95
+            450: {'slope': -0.97, 'intercept': 1.27}  # A(0.3)=0.98, A(0)=1.27
         },
         # 浓度范围
-        'concentration_range': (0.05, 0.3)
+        'concentration_range': (0.0, 0.3),
+        # 训练数据的吸光度范围（用于验证）
+        'absorbance_range': {
+            375: (0.79, 3.70),
+            405: (0.02, 1.95),
+            450: (0.98, 1.27)
+        }
     },
     'solution_b': {
         'name': '溶液B',
         'description': '2025年8月12日测量的实验溶液（低吸光度）',
         'base_absorbance': {
-            375: {'mean': 0.0875, 'std': 0.01},
-            405: {'mean': 0.0146, 'std': 0.003},
-            450: {'mean': 0.0535, 'std': 0.008}
+            375: {'mean': 0.0645, 'std': 0.01},
+            405: {'mean': 0.0187, 'std': 0.003},
+            450: {'mean': 0.0598, 'std': 0.008}
         },
         'calibration': {
-            375: {'slope': 0.28, 'intercept': 0.003},
-            405: {'slope': 0.048, 'intercept': 0.001},
-            450: {'slope': 0.17, 'intercept': 0.002}
+            # 溶液B真实数据范围: A375=(0.03,0.18), A405=(0.0007,0.07), A450=(0.04,0.69)
+            # 高浓度(C=0.23) → 低吸光度; 低浓度(C=0) → 高吸光度
+            375: {'slope': -0.652, 'intercept': 0.18},  # A(0.23)=0.03, A(0)=0.18
+            405: {'slope': -0.301, 'intercept': 0.07},   # A(0.23)=0.0007, A(0)=0.07
+            450: {'slope': -2.826, 'intercept': 0.69}   # A(0.23)=0.04, A(0)=0.69
         },
-        'concentration_range': (0.02, 0.2)
+        'concentration_range': (0.0, 0.23),
+        'absorbance_range': {
+            375: (0.03, 0.18),
+            405: (0.0007, 0.07),
+            450: (0.04, 0.69)
+        }
     }
 }
 
@@ -155,8 +174,10 @@ class SpectrometerSimulator:
             theoretical_A = cal['slope'] * concentration + cal['intercept']
 
             # 添加高斯噪声（模拟测量误差）
-            noise = np.random.normal(0, self.noise_level * theoretical_A)
-            measured_A = max(0, theoretical_A + noise)
+            # 使用绝对值确保噪声尺度为正
+            noise_scale = abs(theoretical_A) * self.noise_level + 1e-6
+            noise = np.random.normal(0, noise_scale)
+            measured_A = max(1e-5, theoretical_A + noise)  # 保持正值
 
             absorbance[wavelength] = round(measured_A, 4)
 
@@ -348,8 +369,9 @@ class DualSolutionSimulator:
         for wavelength in [375, 405, 450]:
             cal = params['calibration'][wavelength]
             theoretical_A = cal['slope'] * concentration + cal['intercept']
-            noise = np.random.normal(0, noise_level * theoretical_A)
-            measured_A = max(0, theoretical_A + noise)
+            noise_scale = abs(theoretical_A) * noise_level + 1e-6
+            noise = np.random.normal(0, noise_scale)
+            measured_A = max(1e-5, theoretical_A + noise)
             absorbance[f'a{wavelength}'] = round(measured_A, 4)
 
         return {

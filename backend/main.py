@@ -343,6 +343,9 @@ async def simulate_measurement(request: SimulatorRequest):
         if simulator is None or not simulator.is_connected:
             raise HTTPException(status_code=503, detail="模拟器未连接")
 
+        # 设置溶液类型
+        simulator.set_solution_type(request.solution_type)
+
         # 执行测量
         absorbance = simulator.measure_sample(request.concentration)
 
@@ -378,6 +381,9 @@ async def batch_simulate(request: BatchSimulatorRequest):
     try:
         if simulator is None or not simulator.is_connected:
             raise HTTPException(status_code=503, detail="模拟器未连接")
+
+        # 设置溶液类型
+        simulator.set_solution_type(request.solution_type)
 
         results = []
         for i, conc in enumerate(request.concentrations):
@@ -506,12 +512,35 @@ async def simulate_dual_solution(request: DualSimulatorRequest):
             request.noise_level
         )
 
-        # 执行预测
-        concentration_pred, details = inference_engine.predict(
+        # 使用双溶液模型执行预测
+        features = extract_dual_solution_features(
+            sample_data['a375'],
+            sample_data['a405'],
+            sample_data['a450']
+        )
+
+        # 标准化
+        scaler = dual_solution_scalers.get(request.solution_type)
+        if scaler:
+            features_scaled = scaler.transform(features)
+        else:
+            features_scaled = features
+
+        # 预测
+        model = dual_solution_models.get(request.solution_type)
+        if not model:
+            raise HTTPException(status_code=400, detail=f"溶液 {request.solution_type} 模型未加载")
+
+        concentration_pred = model.predict(features_scaled)[0]
+
+        # 计算智能置信度
+        config = SOLUTION_CONFIGS.get(request.solution_type, {})
+        smart_confidence = calculate_smart_confidence(
+            request.solution_type,
             sample_data['a375'],
             sample_data['a405'],
             sample_data['a450'],
-            'svr'
+            config.get('base_accuracy', 0.75)
         )
 
         return {
@@ -527,9 +556,9 @@ async def simulate_dual_solution(request: DualSimulatorRequest):
                 "a450": sample_data['a450']
             },
             "prediction": {
-                "concentration": round(concentration_pred, 4),
-                "confidence": round(details['confidence'], 4),
-                "error": round(abs(concentration_pred - request.concentration), 4)
+                "concentration": round(float(concentration_pred), 4),
+                "confidence": round(smart_confidence, 4),
+                "error": round(abs(float(concentration_pred) - request.concentration), 4)
             }
         }
 
@@ -553,6 +582,10 @@ async def batch_simulate_dual_solution(request: DualSimulatorBatchRequest):
         from simulator import DualSolutionSimulator
 
         results = []
+        scaler = dual_solution_scalers.get(request.solution_type)
+        model = dual_solution_models.get(request.solution_type)
+        config = SOLUTION_CONFIGS.get(request.solution_type, {})
+
         for i, conc in enumerate(request.concentrations):
             sample_data = DualSolutionSimulator.generate_sample_data(
                 request.solution_type,
@@ -560,20 +593,34 @@ async def batch_simulate_dual_solution(request: DualSimulatorBatchRequest):
                 request.noise_level
             )
 
-            # 执行预测
-            concentration_pred, details = inference_engine.predict(
+            # 使用双溶液模型预测
+            features = extract_dual_solution_features(
+                sample_data['a375'],
+                sample_data['a405'],
+                sample_data['a450']
+            )
+            if scaler:
+                features_scaled = scaler.transform(features)
+            else:
+                features_scaled = features
+
+            concentration_pred = model.predict(features_scaled)[0] if model else 0
+
+            # 智能置信度
+            smart_confidence = calculate_smart_confidence(
+                request.solution_type,
                 sample_data['a375'],
                 sample_data['a405'],
                 sample_data['a450'],
-                'svr'
+                config.get('base_accuracy', 0.75)
             )
 
             results.append({
                 "样本编号": i + 1,
                 "真实浓度": round(conc, 4),
-                "预测浓度": round(concentration_pred, 4),
-                "预测误差": round(abs(concentration_pred - conc), 4),
-                "置信度": round(details['confidence'], 4),
+                "预测浓度": round(float(concentration_pred), 4),
+                "预测误差": round(abs(float(concentration_pred) - conc), 4),
+                "置信度": round(smart_confidence, 4),
                 "a375": sample_data['a375'],
                 "a405": sample_data['a405'],
                 "a450": sample_data['a450'],

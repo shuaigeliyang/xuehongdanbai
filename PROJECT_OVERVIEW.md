@@ -296,29 +296,27 @@ npm start
 
 ---
 
-## 数据库配置
+## ⚠️ 数据限制说明
 
-### MySQL（可选）
+**重要提醒：由于当前训练数据量较少，模型存在以下限制：**
 
-如果使用MySQL数据库，需要：
+1. **数据量**
+   - 溶液A: 6个样本（浓度点）
+   - 溶液B: 5个样本（浓度点）
 
-1. 创建数据库：
-```sql
-CREATE DATABASE fhb_detection CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+2. **建议**
+   - 预测结果仅供参考，建议临床验证
+   - 建议收集更多实验数据（每种溶液20-30个样本）
+   - 每个浓度点进行3-5次重复测量
 
-2. 配置环境变量（创建 `.env` 文件）：
-```env
-DATABASE_URL=mysql+pymysql://root:password@localhost:3306/fhb_detection
-```
-
-### SQLite（默认）
-
-系统默认使用SQLite，无需额外配置。
+3. **适用浓度范围**
+   - 溶液A: 0-0.3 g/L
+   - 溶液B: 0-0.23 g/L
+   - 超出范围预测可能不准确
 
 ---
 
-## 常见问题
+## 数据库配置
 
 ### Q1: 后端启动失败？
 确保已安装所有依赖：`pip install -r requirements.txt`

@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
 import uvicorn
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional, Literal
 from pathlib import Path
 import json
 import logging
@@ -430,6 +430,218 @@ async def generate_dataset(
 
     except Exception as e:
         logger.error(f"生成数据集失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== 双溶液模拟器接口 ====================
+
+class DualSimulatorRequest(BaseModel):
+    """双溶液模拟请求"""
+    concentration: float = Field(..., ge=0, description="FHb浓度 (g/L)")
+    solution_type: Literal['solution_a', 'solution_b'] = Field(
+        'solution_a',
+        description="溶液类型"
+    )
+    noise_level: Optional[float] = Field(0.01, description="噪声水平")
+
+
+class DualSimulatorBatchRequest(BaseModel):
+    """双溶液批量模拟请求"""
+    concentrations: List[float] = Field(..., description="浓度列表")
+    solution_type: Literal['solution_a', 'solution_b'] = Field(
+        'solution_a',
+        description="溶液类型"
+    )
+    noise_level: Optional[float] = Field(0.01, description="噪声水平")
+
+
+@app.get("/api/simulator/solutions")
+async def get_simulator_solutions():
+    """获取模拟器支持的溶液类型"""
+    from simulator import SOLUTION_PARAMS
+    return {
+        "solutions": {
+            key: {
+                "name": params["name"],
+                "description": params["description"],
+                "concentration_range": params["concentration_range"]
+            }
+            for key, params in SOLUTION_PARAMS.items()
+        }
+    }
+
+
+@app.post("/api/simulator/measure/dual")
+async def simulate_dual_solution(request: DualSimulatorRequest):
+    """
+    双溶液模式模拟测量
+
+    Args:
+        request: 双溶液模拟请求
+
+    Returns:
+        模拟测量结果（包含吸光度和预测）
+    """
+    try:
+        from simulator import DualSolutionSimulator
+
+        # 生成模拟数据
+        sample_data = DualSolutionSimulator.generate_sample_data(
+            request.solution_type,
+            request.concentration,
+            request.noise_level
+        )
+
+        # 执行预测
+        concentration_pred, details = inference_engine.predict(
+            sample_data['a375'],
+            sample_data['a405'],
+            sample_data['a450'],
+            'svr'
+        )
+
+        return {
+            "sample_info": {
+                "concentration_true": request.concentration,
+                "solution_type": request.solution_type,
+                "solution_name": sample_data['solution_name'],
+                "timestamp": sample_data['timestamp']
+            },
+            "absorbance": {
+                "a375": sample_data['a375'],
+                "a405": sample_data['a405'],
+                "a450": sample_data['a450']
+            },
+            "prediction": {
+                "concentration": round(concentration_pred, 4),
+                "confidence": round(details['confidence'], 4),
+                "error": round(abs(concentration_pred - request.concentration), 4)
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"双溶液模拟失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/simulator/batch/dual")
+async def batch_simulate_dual_solution(request: DualSimulatorBatchRequest):
+    """
+    双溶液批量模拟测量
+
+    Args:
+        request: 批量模拟请求
+
+    Returns:
+        批量测量结果
+    """
+    try:
+        from simulator import DualSolutionSimulator
+
+        results = []
+        for i, conc in enumerate(request.concentrations):
+            sample_data = DualSolutionSimulator.generate_sample_data(
+                request.solution_type,
+                conc,
+                request.noise_level
+            )
+
+            # 执行预测
+            concentration_pred, details = inference_engine.predict(
+                sample_data['a375'],
+                sample_data['a405'],
+                sample_data['a450'],
+                'svr'
+            )
+
+            results.append({
+                "样本编号": i + 1,
+                "真实浓度": round(conc, 4),
+                "预测浓度": round(concentration_pred, 4),
+                "预测误差": round(abs(concentration_pred - conc), 4),
+                "置信度": round(details['confidence'], 4),
+                "a375": sample_data['a375'],
+                "a405": sample_data['a405'],
+                "a450": sample_data['a450'],
+                "溶液类型": sample_data['solution_name'],
+                "timestamp": sample_data['timestamp']
+            })
+
+        return {
+            "data": results,
+            "total_samples": len(results),
+            "solution_type": request.solution_type,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+    except Exception as e:
+        logger.error(f"双溶液批量模拟失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/simulator/generate/dual")
+async def generate_dual_solution_dataset(
+    n_samples_a: int = 20,
+    n_samples_b: int = 20,
+    noise_level: float = 0.01
+):
+    """
+    生成双溶液测试数据集
+
+    Args:
+        n_samples_a: 溶液A样本数
+        n_samples_b: 溶液B样本数
+        noise_level: 噪声水平
+
+    Returns:
+        双溶液数据集
+    """
+    try:
+        from simulator import DualSolutionSimulator
+
+        # 生成两种溶液的数据
+        data_a = DualSolutionSimulator.generate_batch_data(
+            'solution_a', n_samples_a, noise_level
+        )
+        data_b = DualSolutionSimulator.generate_batch_data(
+            'solution_b', n_samples_b, noise_level
+        )
+
+        # 为每个样本执行预测
+        for sample_list in [data_a, data_b]:
+            for sample in sample_list:
+                try:
+                    pred_conc, details = inference_engine.predict(
+                        sample['a375'],
+                        sample['a405'],
+                        sample['a450'],
+                        'svr'
+                    )
+                    sample['预测浓度'] = round(pred_conc, 4)
+                    sample['预测误差'] = round(abs(pred_conc - sample['concentration']), 4)
+                except:
+                    sample['预测浓度'] = 0
+                    sample['预测误差'] = 0
+
+        return {
+            "solution_a": {
+                "solution_type": "solution_a",
+                "solution_name": "溶液A（高吸光度）",
+                "samples": data_a,
+                "count": len(data_a)
+            },
+            "solution_b": {
+                "solution_type": "solution_b",
+                "solution_name": "溶液B（低吸光度）",
+                "samples": data_b,
+                "count": len(data_b)
+            },
+            "total_count": len(data_a) + len(data_b),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+    except Exception as e:
+        logger.error(f"生成双溶液数据集失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

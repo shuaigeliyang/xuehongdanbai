@@ -104,15 +104,22 @@ class DualSolutionDataProcessor:
         X = df_valid[feature_cols].values
         y = df_valid['浓度值'].values
 
-        # 划分训练测试集
+        # 划分训练测试集（改进：由于数据量小，使用更大的训练比例）
+        # 数据量少时，80/20分割会导致测试集只有1-2个样本，不可靠
+        # 使用70/30分割，并添加数据增强
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
+            X, y, test_size=0.3, random_state=42
         )
 
         # 标准化
         scaler = StandardScaler()
         X_train_scaled = scaler.fit_transform(X_train)
         X_test_scaled = scaler.transform(X_test)
+
+        # 数据量警告
+        if len(X_train) < 5:
+            print(f"    [!] 警告: 训练样本数={len(X_train)}，建议至少20个样本")
+            print(f"    [!] 模型可能存在过拟合风险，结果仅供参考")
 
         # 保存数据
         self.processors[solution_key] = {

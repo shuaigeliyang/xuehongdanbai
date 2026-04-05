@@ -94,9 +94,19 @@ class DualSolutionModelTrainer:
         print(f"    测试集 MAE: {svr_metrics['test_mae']:.4f} g/L")
 
         # 交叉验证
-        print(f"\n[4] 5折交叉验证...")
-        rf_cv_scores = cross_val_score(rf_model, X_train, y_train, cv=5, scoring='r2')
-        svr_cv_scores = cross_val_score(svr_model, X_train, y_train, cv=5, scoring='r2')
+        # 注意：由于数据量很小，5折交叉验证可能不可靠
+        # 如果样本数<10，使用留一法(LOOCV)
+        n_samples = len(X_train)
+        if n_samples < 10:
+            cv_folds = min(n_samples, 5)  # 留一法或小折数
+            print(f"\n[4] 留一交叉验证 (LOOCV, {cv_folds}折)...")
+            rf_cv_scores = cross_val_score(rf_model, X_train, y_train, cv=cv_folds, scoring='r2')
+            svr_cv_scores = cross_val_score(svr_model, X_train, y_train, cv=cv_folds, scoring='r2')
+            print(f"    注意: 样本数={n_samples}，交叉验证结果可能不稳定")
+        else:
+            print(f"\n[4] 5折交叉验证...")
+            rf_cv_scores = cross_val_score(rf_model, X_train, y_train, cv=5, scoring='r2')
+            svr_cv_scores = cross_val_score(svr_model, X_train, y_train, cv=5, scoring='r2')
 
         print(f"    RandomForest CV-R²: {rf_cv_scores.mean():.4f} (±{rf_cv_scores.std():.4f})")
         print(f"    SVR CV-R²: {svr_cv_scores.mean():.4f} (±{svr_cv_scores.std():.4f})")

@@ -256,6 +256,47 @@ export const predictDualSolution = async (data) => {
   }
 };
 
+// ==================== 双溶液模拟器API ====================
+
+/**
+ * 获取模拟器支持的溶液类型
+ */
+export const getSimulatorSolutions = async () => {
+  return await apiClient.get('/api/simulator/solutions');
+};
+
+/**
+ * 双溶液模式模拟测量
+ * @param {Object} data - { concentration, solution_type, noise_level }
+ */
+export const simulateDualSolution = async (data) => {
+  return await apiClient.post('/api/simulator/measure/dual', data);
+};
+
+/**
+ * 双溶液批量模拟测量
+ * @param {Object} data - { concentrations, solution_type, noise_level }
+ */
+export const batchSimulateDual = async (data) => {
+  return await apiClient.post('/api/simulator/batch/dual', data);
+};
+
+/**
+ * 生成双溶液测试数据集
+ * @param {number} nSamplesA - 溶液A样本数
+ * @param {number} nSamplesB - 溶液B样本数
+ * @param {number} noiseLevel - 噪声水平
+ */
+export const generateDualDataset = async (nSamplesA = 20, nSamplesB = 20, noiseLevel = 0.01) => {
+  return await apiClient.post('/api/simulator/generate/dual', null, {
+    params: {
+      n_samples_a: nSamplesA,
+      n_samples_b: nSamplesB,
+      noise_level: noiseLevel
+    }
+  });
+};
+
 // ==================== 系统状态API ====================
 
 /**

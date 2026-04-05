@@ -1,0 +1,9 @@
+终端运行:
+cd ".\backend"
+D:\ano\python.exe main.py
+
+然后再开一个终端运行:
+cd ".\frontend"
+npm start
+
+然后会自动弹出界面

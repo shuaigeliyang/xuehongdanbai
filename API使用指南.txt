@@ -1,0 +1,123 @@
+================================================================================
+血浆游离血红蛋白检测系统 - 模型使用指南
+================================================================================
+
+一、快速开始
+--------------------------------------------------------------------------------
+
+from sklearn.preprocessing import StandardScaler
+import pickle
+import numpy as np
+
+# 1. 加载模型
+with open('rf_model.pkl', 'rb') as f:
+    model = pickle.load(f)
+
+with open('scaler.pkl', 'rb') as f:
+    scaler = pickle.load(f)
+
+# 2. 准备输入数据 (三个波长吸光度)
+# 输入格式: [375nm, 405nm, 450nm]
+raw_data = np.array([[0.5, 0.1, 0.8]])  # 示例数据
+
+# 3. 特征工程 (自动计算组合特征)
+def create_features(raw_data):
+    a375, a405, a450 = raw_data[0]
+    features = [
+        a375, a405, a450,  # 原始吸光度
+        a405/(a375+0.001),  # A405/A375
+        a450/(a405+0.001),  # A450/A405
+        a450/(a375+0.001),  # A450/A375
+        a405-a375,          # A405-A375
+        a450-a405,          # A450-A405
+        a375+a405+a450      # A_sum
+    ]
+    return np.array([features])
+
+features = create_features(raw_data)
+
+# 4. 标准化
+features_scaled = scaler.transform(features)
+
+# 5. 预测
+concentration = model.predict(features_scaled)
+print(f'预测浓度: {concentration[0]:.4f} g/L')
+
+二、完整预测类
+--------------------------------------------------------------------------------
+
+class FHbPredictor:
+    '''血浆游离血红蛋白浓度预测器'''
+
+    def __init__(self, model_path='rf_model.pkl',
+                 scaler_path='scaler.pkl'):
+        import pickle
+        with open(model_path, 'rb') as f:
+            self.model = pickle.load(f)
+        with open(scaler_path, 'rb') as f:
+            self.scaler = pickle.load(f)
+
+    def _create_features(self, a375, a405, a450):
+        '''创建特征'''
+        return np.array([[
+            a375, a405, a450,
+            a405/(a375+0.001),
+            a450/(a405+0.001),
+            a450/(a375+0.001),
+            a405-a375,
+            a450-a405,
+            a375+a405+a450
+        ]])
+
+    def predict(self, a375, a405, a450):
+        '''预测浓度'''
+        features = self._create_features(a375, a405, a450)
+        features_scaled = self.scaler.transform(features)
+        return self.model.predict(features_scaled)[0]
+
+# 使用示例
+predictor = FHbPredictor()
+concentration = predictor.predict(0.5, 0.1, 0.8)
+print(f'预测浓度: {concentration:.4f} g/L')
+
+三、输入参数说明
+--------------------------------------------------------------------------------
+
+输入参数 (三个波长的吸光度值):
+  a375: 375nm波长处的吸光度
+  a405: 405nm波长处的吸光度 (血红蛋白特征吸收峰)
+  a450: 450nm波长处的吸光度
+
+输出参数:
+  concentration: 血浆游离血红蛋白浓度 (g/L)
+
+注意事项:
+  - 吸光度值应在合理范围内 (0-6)
+  - 确保光谱仪已校准
+  - 样品应无明显溶血干扰
+
+四、模型性能指标
+--------------------------------------------------------------------------------
+
+模型: RandomForest (推荐使用)
+准确度 (R2): 0.9980
+平均绝对误差: 0.003322 g/L
+均方误差: 0.000013
+交叉验证R²: 0.9910 ± 0.0212
+
+五、常见问题
+--------------------------------------------------------------------------------
+
+Q1: 如何选择SVR或RandomForest?
+A1: 推荐使用RandomForest,精度更高且更稳定。
+
+Q2: 预测结果异常怎么办?
+A2: 检查输入吸光度值是否合理,确保光谱仪正常工作。
+
+Q3: 可以用于其他浓度的样本吗?
+A3: 模型训练范围为0-0.3g/L,超出范围预测可能不准确。
+
+Q4: 如何更新模型?
+A4: 收集更多新样本,重新运行训练脚本即可。
+
+================================================================================

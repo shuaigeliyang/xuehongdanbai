@@ -1,0 +1,604 @@
+{
+  "generated_at": "2026-03-16T15:36:57.394894",
+  "history_records": [
+    {
+      "id": "REC-20260316001",
+      "request": {
+        "absorbance": {
+          "a375": 0.4045,
+          "a405": 0.0208,
+          "a450": 0.8685
+        },
+        "sample_info": {
+          "sample_id": "HS-0001",
+          "sample_type": "质控样本",
+          "notes": "常规检测样本 #1"
+        },
+        "model_type": "svr"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0001",
+          "sample_type": "标准品"
+        },
+        "prediction": {
+          "concentration": 0.3022,
+          "confidence": 0.8996,
+          "model_type": "svr",
+          "timestamp": "2026-03-16 13:37:57"
+        },
+        "model_info": {
+          "model_type": "svr",
+          "test_r2": 0.9488,
+          "test_mae": 0.0198,
+          "test_mse": 0.000338
+        }
+      },
+      "created_at": "2026-03-16T13:37:57.394894"
+    },
+    {
+      "id": "REC-20260316002",
+      "request": {
+        "absorbance": {
+          "a375": 0.9021,
+          "a405": 0.0828,
+          "a450": 0.9148
+        },
+        "sample_info": {
+          "sample_id": "HS-0002",
+          "sample_type": "质控样本",
+          "notes": "常规检测样本 #2"
+        },
+        "model_type": "rf"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0002",
+          "sample_type": "待测样本"
+        },
+        "prediction": {
+          "concentration": 0.1305,
+          "confidence": 0.8595,
+          "model_type": "rf",
+          "timestamp": "2026-03-16 13:51:57"
+        },
+        "model_info": {
+          "model_type": "rf",
+          "test_r2": 0.9396,
+          "test_mae": 0.0078,
+          "test_mse": 0.000374
+        }
+      },
+      "created_at": "2026-03-16T13:51:57.394894"
+    },
+    {
+      "id": "REC-20260316003",
+      "request": {
+        "absorbance": {
+          "a375": 0.512,
+          "a405": 0.0284,
+          "a450": 0.8717
+        },
+        "sample_info": {
+          "sample_id": "HS-0003",
+          "sample_type": "标准品",
+          "notes": "常规检测样本 #3"
+        },
+        "model_type": "svr"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0003",
+          "sample_type": "标准品"
+        },
+        "prediction": {
+          "concentration": 0.2588,
+          "confidence": 0.979,
+          "model_type": "svr",
+          "timestamp": "2026-03-16 15:02:57"
+        },
+        "model_info": {
+          "model_type": "svr",
+          "test_r2": 0.976,
+          "test_mae": 0.0071,
+          "test_mse": 0.000212
+        }
+      },
+      "created_at": "2026-03-16T15:02:57.394894"
+    },
+    {
+      "id": "REC-20260316004",
+      "request": {
+        "absorbance": {
+          "a375": 0.3706,
+          "a405": 0.01,
+          "a450": 0.8274
+        },
+        "sample_info": {
+          "sample_id": "HS-0004",
+          "sample_type": "标准品",
+          "notes": "常规检测样本 #4"
+        },
+        "model_type": "svr"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0004",
+          "sample_type": "标准品"
+        },
+        "prediction": {
+          "concentration": 0.3227,
+          "confidence": 0.9021,
+          "model_type": "svr",
+          "timestamp": "2026-03-16 14:55:57"
+        },
+        "model_info": {
+          "model_type": "svr",
+          "test_r2": 0.9234,
+          "test_mae": 0.0189,
+          "test_mse": 0.000468
+        }
+      },
+      "created_at": "2026-03-16T14:55:57.394894"
+    },
+    {
+      "id": "REC-20260316005",
+      "request": {
+        "absorbance": {
+          "a375": 1.1751,
+          "a405": 0.1088,
+          "a450": 0.9985
+        },
+        "sample_info": {
+          "sample_id": "HS-0005",
+          "sample_type": "质控样本",
+          "notes": "常规检测样本 #5"
+        },
+        "model_type": "svr"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0005",
+          "sample_type": "标准品"
+        },
+        "prediction": {
+          "concentration": 0.0263,
+          "confidence": 0.8944,
+          "model_type": "svr",
+          "timestamp": "2026-03-16 13:38:57"
+        },
+        "model_info": {
+          "model_type": "svr",
+          "test_r2": 0.9557,
+          "test_mae": 0.0196,
+          "test_mse": 0.000496
+        }
+      },
+      "created_at": "2026-03-16T13:38:57.394894"
+    },
+    {
+      "id": "REC-20260316006",
+      "request": {
+        "absorbance": {
+          "a375": 1.1958,
+          "a405": 0.1203,
+          "a450": 0.9904
+        },
+        "sample_info": {
+          "sample_id": "HS-0006",
+          "sample_type": "质控样本",
+          "notes": "常规检测样本 #6"
+        },
+        "model_type": "rf"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0006",
+          "sample_type": "标准品"
+        },
+        "prediction": {
+          "concentration": 0.0033,
+          "confidence": 0.9716,
+          "model_type": "rf",
+          "timestamp": "2026-03-16 14:27:57"
+        },
+        "model_info": {
+          "model_type": "rf",
+          "test_r2": 0.9267,
+          "test_mae": 0.0058,
+          "test_mse": 0.000412
+        }
+      },
+      "created_at": "2026-03-16T14:27:57.394894"
+    },
+    {
+      "id": "REC-20260316007",
+      "request": {
+        "absorbance": {
+          "a375": 1.0663,
+          "a405": 0.1106,
+          "a450": 0.9891
+        },
+        "sample_info": {
+          "sample_id": "HS-0007",
+          "sample_type": "标准品",
+          "notes": "常规检测样本 #7"
+        },
+        "model_type": "rf"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0007",
+          "sample_type": "质控样本"
+        },
+        "prediction": {
+          "concentration": 0.0448,
+          "confidence": 0.8712,
+          "model_type": "rf",
+          "timestamp": "2026-03-16 14:14:57"
+        },
+        "model_info": {
+          "model_type": "rf",
+          "test_r2": 0.9745,
+          "test_mae": 0.0129,
+          "test_mse": 0.000163
+        }
+      },
+      "created_at": "2026-03-16T14:14:57.394894"
+    },
+    {
+      "id": "REC-20260316008",
+      "request": {
+        "absorbance": {
+          "a375": 0.4232,
+          "a405": 0.0118,
+          "a450": 0.8249
+        },
+        "sample_info": {
+          "sample_id": "HS-0008",
+          "sample_type": "标准品",
+          "notes": "常规检测样本 #8"
+        },
+        "model_type": "svr"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0008",
+          "sample_type": "待测样本"
+        },
+        "prediction": {
+          "concentration": 0.3297,
+          "confidence": 0.9461,
+          "model_type": "svr",
+          "timestamp": "2026-03-16 15:30:57"
+        },
+        "model_info": {
+          "model_type": "svr",
+          "test_r2": 0.9504,
+          "test_mae": 0.02,
+          "test_mse": 0.000123
+        }
+      },
+      "created_at": "2026-03-16T15:30:57.394894"
+    },
+    {
+      "id": "REC-20260316009",
+      "request": {
+        "absorbance": {
+          "a375": 0.8824,
+          "a405": 0.0634,
+          "a450": 0.9536
+        },
+        "sample_info": {
+          "sample_id": "HS-0009",
+          "sample_type": "标准品",
+          "notes": "常规检测样本 #9"
+        },
+        "model_type": "svr"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0009",
+          "sample_type": "标准品"
+        },
+        "prediction": {
+          "concentration": 0.1383,
+          "confidence": 0.8968,
+          "model_type": "svr",
+          "timestamp": "2026-03-16 14:12:57"
+        },
+        "model_info": {
+          "model_type": "svr",
+          "test_r2": 0.9309,
+          "test_mae": 0.009,
+          "test_mse": 0.000285
+        }
+      },
+      "created_at": "2026-03-16T14:12:57.394894"
+    },
+    {
+      "id": "REC-20260316010",
+      "request": {
+        "absorbance": {
+          "a375": 1.1937,
+          "a405": 0.1184,
+          "a450": 0.9639
+        },
+        "sample_info": {
+          "sample_id": "HS-0010",
+          "sample_type": "待测样本",
+          "notes": "常规检测样本 #10"
+        },
+        "model_type": "svr"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0010",
+          "sample_type": "质控样本"
+        },
+        "prediction": {
+          "concentration": 0.0093,
+          "confidence": 0.9594,
+          "model_type": "svr",
+          "timestamp": "2026-03-16 14:46:57"
+        },
+        "model_info": {
+          "model_type": "svr",
+          "test_r2": 0.9346,
+          "test_mae": 0.0125,
+          "test_mse": 0.000391
+        }
+      },
+      "created_at": "2026-03-16T14:46:57.394894"
+    },
+    {
+      "id": "REC-20260316011",
+      "request": {
+        "absorbance": {
+          "a375": 1.125,
+          "a405": 0.1053,
+          "a450": 0.956
+        },
+        "sample_info": {
+          "sample_id": "HS-0011",
+          "sample_type": "质控样本",
+          "notes": "常规检测样本 #11"
+        },
+        "model_type": "rf"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0011",
+          "sample_type": "标准品"
+        },
+        "prediction": {
+          "concentration": 0.0346,
+          "confidence": 0.9206,
+          "model_type": "rf",
+          "timestamp": "2026-03-16 13:38:57"
+        },
+        "model_info": {
+          "model_type": "rf",
+          "test_r2": 0.9408,
+          "test_mae": 0.0176,
+          "test_mse": 0.00029
+        }
+      },
+      "created_at": "2026-03-16T13:38:57.394894"
+    },
+    {
+      "id": "REC-20260316012",
+      "request": {
+        "absorbance": {
+          "a375": 0.3799,
+          "a405": 0.0173,
+          "a450": 0.867
+        },
+        "sample_info": {
+          "sample_id": "HS-0012",
+          "sample_type": "标准品",
+          "notes": "常规检测样本 #12"
+        },
+        "model_type": "svr"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0012",
+          "sample_type": "标准品"
+        },
+        "prediction": {
+          "concentration": 0.3029,
+          "confidence": 0.8613,
+          "model_type": "svr",
+          "timestamp": "2026-03-16 14:22:57"
+        },
+        "model_info": {
+          "model_type": "svr",
+          "test_r2": 0.9653,
+          "test_mae": 0.0189,
+          "test_mse": 0.000243
+        }
+      },
+      "created_at": "2026-03-16T14:22:57.394894"
+    },
+    {
+      "id": "REC-20260316013",
+      "request": {
+        "absorbance": {
+          "a375": 1.0125,
+          "a405": 0.0843,
+          "a450": 0.9486
+        },
+        "sample_info": {
+          "sample_id": "HS-0013",
+          "sample_type": "待测样本",
+          "notes": "常规检测样本 #13"
+        },
+        "model_type": "rf"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0013",
+          "sample_type": "标准品"
+        },
+        "prediction": {
+          "concentration": 0.0868,
+          "confidence": 0.9413,
+          "model_type": "rf",
+          "timestamp": "2026-03-16 14:55:57"
+        },
+        "model_info": {
+          "model_type": "rf",
+          "test_r2": 0.9888,
+          "test_mae": 0.0165,
+          "test_mse": 0.000239
+        }
+      },
+      "created_at": "2026-03-16T14:55:57.394894"
+    },
+    {
+      "id": "REC-20260316014",
+      "request": {
+        "absorbance": {
+          "a375": 0.4266,
+          "a405": 0.01,
+          "a450": 0.8602
+        },
+        "sample_info": {
+          "sample_id": "HS-0014",
+          "sample_type": "标准品",
+          "notes": "常规检测样本 #14"
+        },
+        "model_type": "rf"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0014",
+          "sample_type": "质控样本"
+        },
+        "prediction": {
+          "concentration": 0.2965,
+          "confidence": 0.8912,
+          "model_type": "rf",
+          "timestamp": "2026-03-16 13:50:57"
+        },
+        "model_info": {
+          "model_type": "rf",
+          "test_r2": 0.9428,
+          "test_mae": 0.0178,
+          "test_mse": 0.00017
+        }
+      },
+      "created_at": "2026-03-16T13:50:57.394894"
+    },
+    {
+      "id": "REC-20260316015",
+      "request": {
+        "absorbance": {
+          "a375": 0.7705,
+          "a405": 0.046,
+          "a450": 0.8875
+        },
+        "sample_info": {
+          "sample_id": "HS-0015",
+          "sample_type": "待测样本",
+          "notes": "常规检测样本 #15"
+        },
+        "model_type": "rf"
+      },
+      "result": {
+        "sample_info": {
+          "sample_id": "HS-0015",
+          "sample_type": "待测样本"
+        },
+        "prediction": {
+          "concentration": 0.1974,
+          "confidence": 0.9158,
+          "model_type": "rf",
+          "timestamp": "2026-03-16 14:31:57"
+        },
+        "model_info": {
+          "model_type": "rf",
+          "test_r2": 0.9794,
+          "test_mae": 0.0167,
+          "test_mse": 0.000402
+        }
+      },
+      "created_at": "2026-03-16T14:31:57.394894"
+    }
+  ],
+  "api_test_data": {
+    "single_prediction": {
+      "absorbance": {
+        "a375": 0.1523,
+        "a405": 0.0895,
+        "a450": 0.7342
+      },
+      "sample_info": {
+        "sample_id": "API-TEST-001",
+        "sample_type": "待测样本",
+        "notes": "API测试样本"
+      },
+      "model_type": "rf"
+    },
+    "simulator_measurement": {
+      "concentration": 0.15
+    },
+    "edge_cases": [
+      {
+        "a375": 0.15,
+        "a405": 0.06,
+        "a450": 0.69,
+        "description": "低浓度正常"
+      },
+      {
+        "a375": 0.14,
+        "a405": 0.03,
+        "a450": 0.08,
+        "description": "轻微溶血"
+      },
+      {
+        "a375": 0.12,
+        "a405": 0.025,
+        "a450": 0.07,
+        "description": "中等溶血"
+      },
+      {
+        "a375": 0.08,
+        "a405": 0.02,
+        "a450": 0.06,
+        "description": "严重溶血"
+      }
+    ],
+    "quick_test_cases": [
+      {
+        "sample_id": "TEST-001",
+        "a375": 0.15,
+        "a405": 0.06,
+        "a450": 0.69,
+        "expected": "正常"
+      },
+      {
+        "sample_id": "TEST-002",
+        "a375": 0.14,
+        "a405": 0.03,
+        "a450": 0.08,
+        "expected": "轻微溶血"
+      },
+      {
+        "sample_id": "TEST-003",
+        "a375": 0.12,
+        "a405": 0.025,
+        "a450": 0.07,
+        "expected": "中等溶血"
+      },
+      {
+        "sample_id": "TEST-004",
+        "a375": 0.08,
+        "a405": 0.02,
+        "a450": 0.06,
+        "expected": "严重溶血"
+      }
+    ]
+  }
+}

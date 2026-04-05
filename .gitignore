@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+.npm
+.yarn
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Backend
+backend/__pycache__/
+backend/venv/
+*.pyc
+dual_solution.log
+
+# Frontend build
+frontend/build/
+frontend/.env
+
+# Temporary files
+*.tmp
+*.temp
+nul
+
+# Byte-compiled
+*.pyc
+*.pyo

@@ -1,0 +1,57 @@
+{
+  "generated_at": "2026-04-05 15:30:18",
+  "solutions": {
+    "solution_a": {
+      "name": "溶液A",
+      "description": "2025年7月31日测量的标准溶液",
+      "total_samples": 18,
+      "train_samples": 14,
+      "test_samples": 4,
+      "concentration_range": [
+        0.0,
+        0.3
+      ],
+      "concentration_mean": 0.15,
+      "wavelengths": {
+        "375nm": {
+          "mean": 1.9702000000000004,
+          "std": 1.1587133345934644
+        },
+        "405nm": {
+          "mean": 0.639275,
+          "std": 0.7156434632038992
+        },
+        "450nm": {
+          "mean": 1.0959611111111112,
+          "std": 0.10312753462918042
+        }
+      }
+    },
+    "solution_b": {
+      "name": "溶液B",
+      "description": "2025年8月12日测量的实验溶液",
+      "total_samples": 20,
+      "train_samples": 16,
+      "test_samples": 4,
+      "concentration_range": [
+        0.0473,
+        0.229
+      ],
+      "concentration_mean": 0.11250000000000002,
+      "wavelengths": {
+        "375nm": {
+          "mean": 0.08748999999999998,
+          "std": 0.04634725791014473
+        },
+        "405nm": {
+          "mean": 0.0146305,
+          "std": 0.010313137495447251
+        },
+        "450nm": {
+          "mean": 0.053544499999999995,
+          "std": 0.009127426843830284
+        }
+      }
+    }
+  }
+}

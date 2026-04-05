@@ -1,0 +1,17 @@
+{
+  "solution_key": "solution_a",
+  "solution_name": "溶液A",
+  "best_model_type": "svr",
+  "feature_cols": [
+    "375nm",
+    "405nm",
+    "450nm",
+    "A405_A375",
+    "A450_A405",
+    "A450_A375",
+    "A405_minus_A375",
+    "A450_minus_A405",
+    "A_sum"
+  ],
+  "trained_at": "2026-04-05 15:30:20"
+}
